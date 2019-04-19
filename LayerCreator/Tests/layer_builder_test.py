@@ -1,5 +1,5 @@
 from datetime import datetime
-from LayerCreator.creator import *
+from LayerCreator.Objects.creator import *
 from botocore.stub import Stubber
 
 def test_stub_create_s3():

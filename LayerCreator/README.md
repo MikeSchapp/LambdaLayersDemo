@@ -7,14 +7,14 @@ layer version for reference in a lambda function.
 ## Using The Creator
 Can be launched via cli, or used within your own code.
 
-To launch via cli call, creator and enter in the name of the specific bucket
+To launch via cli call main and enter in the name of the specific bucket
 you would like to create or reference.
         
-    >python creator.py name-of-bucket
+    >python main.py name-of-bucket
         
 By default it will use your AWS Credentials, or you can specify a profile to use.
 
-    >python creator.py name-of-bucket my-aws-credential-profile
+    >python main.py name-of-bucket my-aws-credential-profile
     
 This CLI then will guide you through:
 

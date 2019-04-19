@@ -1,6 +1,5 @@
 import boto3
 import shutil
-import sys
 from botocore.exceptions import ClientError, ProfileNotFound
 
 
@@ -39,7 +38,7 @@ class LayerCreator:
             print("Exiting Program, bucket must exist. Specify s3 bucket you own")
             exit()
         else:
-            print("Please try again with a different bucket name.")
+            print("Invalid Entry")
             exit()
 
     def prompt_for_file_input(self):
@@ -62,6 +61,8 @@ class LayerCreator:
             if new_user_input in ["N", "n", "No", "no"]:
                 print("Exiting Program, file must be zipped to be uploaded")
                 exit()
+            else:
+                print("Invalid Entry")
         return False
 
     def prompt_for_user_upload_input(self):
@@ -120,13 +121,3 @@ class LayerCreator:
     def define_layer_version(self):
         # TODO
         pass
-
-
-if __name__ == "__main__":
-    s3_name = sys.argv[1]
-    try:
-        aws_profile = sys.argv[2]
-        creator = LayerCreator(s3_name, aws_profile)
-    except IndexError:
-        creator = LayerCreator(s3_name)
-    creator.cli_builder()
