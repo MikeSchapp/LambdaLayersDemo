@@ -20,7 +20,7 @@ class CloudFormationApi:
         :param stack_name: string of the name of the cloudformation stack you want to create
         :param stack_parameters: dictionary of parameters to be passed in.
         """
-        if kwargs.get("profile"):
+        if kwargs.get("profile", "default"):
             session = boto3.Session(profile_name=kwargs.get("profile"))
             self._client = session.client('cloudformation', region_name=region)
         else:
@@ -83,21 +83,9 @@ class CloudFormationApi:
                 StackName=self._stack_name,
                 TemplateBody=self._template,
                 UsePreviousTemplate=False,
-                Parameters=[
-                    {
-                        'ParameterKey': "MyBucketName",
-                        "ParameterValue": self._bucket_name
-                    }
-                ],
-                Tags=[
-                    {
-                        'Key': 'CloudFormationType',
-                        'Value': 'S3'
-                    },
-                ],
-                Capabilities=[
-                    "CAPABILITY_IAM"
-                ]
+                Parameters=self._parameters,
+                Tags=self._tags,
+                Capabilities=self._capabilities
             )
             return response
         else:
@@ -129,7 +117,7 @@ class CloudFormationApi:
         """
         print("Checking status of the stack")
         try:
-            response = self._client.describe_stacks(
+            self._client.describe_stacks(
                 StackName=stack_name
             )
         except ClientError:
@@ -161,6 +149,7 @@ class CloudFormationApi:
             message = f"Stack named {self._stack_name} currently exists"
         else:
             print("Please select the appropriate type")
+            exit()
 
         waiter.wait(
             StackName=self._stack_name,
