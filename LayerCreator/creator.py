@@ -5,19 +5,21 @@ from botocore.exceptions import ClientError, ProfileNotFound
 
 
 class LayerCreator:
-    def __init__(self, bucket_name):
+    def __init__(self, bucket_name, profile="default"):
         # TODO Separate out the object into an S3 object and one for layer management
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
         This object is used for the creation and management of lambda layers. It will create or use an existing s3
         bucket, zip the archive and then upload it to S3.
         :param bucket_name: Name of an existing bucket, or a bucket you would like to create.
+        :param profile: Alternate AWS credential profile to be used instead.
         """
+        self.profile = profile
         try:
-            session = boto3.Session(profile_name="mfa")
+            session = boto3.Session(profile_name=self.profile)
+            self.client = session.client('s3')
         except ProfileNotFound:
-            print("Ensure that the profile named in LayerCreator exists in AWS Credentials")
-        self.client = session.client('s3')
+            self.client = boto3.client('s3')
         self.bucket_name = bucket_name
         self.zip_name = []
 
@@ -90,8 +92,6 @@ class LayerCreator:
             if item["Name"] == self.bucket_name:
                 print("Bucket found!")
                 return True
-            else:
-                continue
         print("Bucket not found")
         return False
 
@@ -117,8 +117,16 @@ class LayerCreator:
             )
             return response
 
+    def define_layer_version(self):
+        # TODO
+        pass
+
 
 if __name__ == "__main__":
     s3_name = sys.argv[1]
-    creator = LayerCreator(s3_name)
+    try:
+        aws_profile = sys.argv[2]
+        creator = LayerCreator(s3_name, aws_profile)
+    except IndexError:
+        creator = LayerCreator(s3_name)
     creator.cli_builder()
