@@ -2,6 +2,7 @@ from datetime import datetime
 from LayerCreator.Objects.creator import *
 from botocore.stub import Stubber
 
+
 def test_stub_create_s3():
     session = boto3.Session(profile_name="mfa")
     s3 = session.client('s3')
@@ -10,11 +11,12 @@ def test_stub_create_s3():
         "Location": "Test"
     }
     expected_params = {'Bucket': 'mike-stub-test',
-                       'CreateBucketConfiguration': {'LocationConstraint': 'us-east-2'}}
+                       'CreateBucketConfiguration': {'LocationConstraint': 'us-east-2'},
+                       'ObjectLockEnabledForBucket': False}
     stubber.add_response('create_bucket', response, expected_params)
     stubber.activate()
-    test = LayerCreator("mike-stub-test")
-    test.client = s3
+    test = LayerCreatorInterface("mike-stub-test")
+    test.s3_api.client = s3
     new_response = test.create_s3()
     assert response == new_response
 
@@ -42,9 +44,9 @@ def test_stub_list_buckets_bucket_exists():
     expected_params = None
     stubber.add_response('list_buckets', response, expected_params)
     stubber.activate()
-    test = LayerCreator("mike-stub-test")
-    test.client = s3
-    new_response = test.check_if_s3_exists()
+    test = LayerCreatorInterface("mike-stub-test")
+    test.s3_api.client = s3
+    new_response = test.s3_api.check_if_s3_exists(test.bucket_name)
     assert new_response is True
 
 
@@ -70,9 +72,9 @@ def test_stub_list_buckets_bucket_not_exist():
     expected_params = None
     stubber.add_response('list_buckets', response, expected_params)
     stubber.activate()
-    test = LayerCreator("mike-stub-test")
-    test.client = s3
-    new_response = test.check_if_s3_exists()
+    test = LayerCreatorInterface("mike-stub-test")
+    test.s3_api.client = s3
+    new_response = test.s3_api.check_if_s3_exists(test.bucket_name)
     assert new_response is False
 
 
@@ -98,9 +100,9 @@ def test_stub_put_object_prenamed():
 
     stubber.add_response('put_object', response, expected_params)
     stubber.activate()
-    test = LayerCreator("mike-stub-test")
-    test.client = s3
-    new_response = test.upload_layer()
+    test = LayerCreatorInterface("mike-stub-test")
+    test.s3_api.client = s3
+    new_response = test.s3_api.upload_layer(test.zip_name, test.bucket_name)
     assert new_response == response
 
 
@@ -126,8 +128,8 @@ def test_stub_put_object_self_named():
 
     stubber.add_response('put_object', response, expected_params)
     stubber.activate()
-    test = LayerCreator("mike-stub-test")
+    test = LayerCreatorInterface("mike-stub-test")
     test.zip_name = ["test.zip"]
-    test.client = s3
-    new_response = test.upload_layer()
+    test.s3_api.client = s3
+    new_response = test.s3_api.upload_layer(test.zip_name, test.bucket_name)
     assert new_response == response

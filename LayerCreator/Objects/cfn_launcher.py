@@ -71,7 +71,7 @@ class CloudFormationApi:
         else:
             print(f'Stack by name of {self._stack_name} already exists')
 
-    def update_stack(self, region_name):
+    def update_stack(self):
         """
         Runs check_stack() in order to determine whether there is a valid target for the update command
 
@@ -96,7 +96,6 @@ class CloudFormationApi:
         Runs check stack to ensure the stack is available, and then will delete the stack if termination
         protection is off
 
-        :param region_name: Region the stack is located in e.g. us-east-1
         :return: Response to the delete command, if it can successfully identify the stack
         """
         print("Deleting stack")

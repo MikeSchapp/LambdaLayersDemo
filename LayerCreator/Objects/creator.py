@@ -1,11 +1,12 @@
 import boto3
 import shutil
 from botocore.exceptions import ClientError, ProfileNotFound
+from LayerCreator.Objects.config_reader import ConfigReader
+from LayerCreator.Objects.s3_api import S3Api
 
 
-class LayerCreator:
+class LayerCreatorInterface:
     def __init__(self, bucket_name, profile="default"):
-        # TODO Separate out the object into an S3 object and one for layer management
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
         This object is used for the creation and management of lambda layers. It will create or use an existing s3
@@ -14,16 +15,12 @@ class LayerCreator:
         :param profile: Alternate AWS credential profile to be used instead.
         """
         self.profile = profile
-        try:
-            session = boto3.Session(profile_name=self.profile)
-            self.client = session.client('s3')
-        except ProfileNotFound:
-            self.client = boto3.client('s3')
+        self.s3_api = S3Api(self.profile)
         self.bucket_name = bucket_name
         self.zip_name = []
 
     def cli_builder(self):
-        if not self.check_if_s3_exists():
+        if not self.s3_api.check_if_s3_exists(self.bucket_name):
             if self.prompt_for_bucket_input():
                 self.create_s3()
         if self.prompt_for_file_input():
@@ -74,50 +71,24 @@ class LayerCreator:
         if user_input in ["N", "n", "No", "no"]:
             return False
 
-    def create_s3(self):
-        response = self.client.create_bucket(
-            Bucket=self.bucket_name,
-            CreateBucketConfiguration={
-                "LocationConstraint": "us-east-2"
-            }
-        )
-        return response
+    def s3_response_constructor(self):
+        config = ConfigReader.read_config()
+        config["Bucket"] = self.bucket_name
+        return config
 
-    def check_if_s3_exists(self):
-        try:
-            response = self.client.list_buckets()
-        except (ClientError, ProfileNotFound) as err:
-            print(err)
-            exit()
-        for item in response["Buckets"]:
-            if item["Name"] == self.bucket_name:
-                print("Bucket found!")
-                return True
-        print("Bucket not found")
-        return False
+    def create_s3(self):
+        pre_made_response = self.s3_response_constructor()
+        response = self.s3_api.create_bucket(pre_made_response)
+        return response
 
     @staticmethod
     def prepare_layer(file_path):
         shutil.make_archive('layer', 'zip', file_path)
 
     def upload_layer(self):
-        if self.zip_name:
-            response = self.client.put_object(
-                ACL="private",
-                Body=self.zip_name[0],
-                Bucket=self.bucket_name,
-                Key="layer.zip"
-            )
-            return response
-        else:
-            response = self.client.put_object(
-                ACL="private",
-                Body="layer.zip",
-                Bucket=self.bucket_name,
-                Key="layer.zip"
-            )
-            return response
+        self.s3_api.upload_layer(self.zip_name, self.bucket_name)
 
     def define_layer_version(self):
         # TODO
         pass
+
