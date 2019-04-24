@@ -3,7 +3,8 @@ from botocore.exceptions import ProfileNotFound, ClientError
 
 
 class S3Api:
-    def __init__(self, profile="default"):
+    def __init__(self, bucket_name, profile="default"):
+        self.bucket_name = bucket_name
         self.profile = profile
         try:
             session = boto3.Session(profile_name=self.profile)
@@ -28,12 +29,12 @@ class S3Api:
         print("Bucket not found")
         return False
 
-    def upload_layer(self, zip_name, bucket_name):
+    def upload_layer(self, zip_name):
         if zip_name:
             response = self.client.put_object(
                 ACL="private",
                 Body=zip_name[0],
-                Bucket=bucket_name,
+                Bucket=self.bucket_name,
                 Key="layer.zip"
             )
             return response
@@ -41,7 +42,7 @@ class S3Api:
             response = self.client.put_object(
                 ACL="private",
                 Body="layer.zip",
-                Bucket=bucket_name,
+                Bucket=self.bucket_name,
                 Key="layer.zip"
             )
             return response

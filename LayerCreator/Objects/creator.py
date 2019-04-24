@@ -1,26 +1,20 @@
-import boto3
 import shutil
-from botocore.exceptions import ClientError, ProfileNotFound
 from LayerCreator.Objects.config_reader import ConfigReader
-from LayerCreator.Objects.s3_api import S3Api
 
 
 class LayerCreatorInterface:
-    def __init__(self, bucket_name, profile="default"):
+    def __init__(self, s3_api):
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
         This object is used for the creation and management of lambda layers. It will create or use an existing s3
         bucket, zip the archive and then upload it to S3.
-        :param bucket_name: Name of an existing bucket, or a bucket you would like to create.
         :param profile: Alternate AWS credential profile to be used instead.
         """
-        self.profile = profile
-        self.s3_api = S3Api(self.profile)
-        self.bucket_name = bucket_name
+        self.s3_api = s3_api
         self.zip_name = []
 
     def cli_builder(self):
-        if not self.s3_api.check_if_s3_exists(self.bucket_name):
+        if not self.s3_api.check_if_s3_exists():
             if self.prompt_for_bucket_input():
                 self.create_s3()
         if self.prompt_for_file_input():
@@ -73,7 +67,7 @@ class LayerCreatorInterface:
 
     def s3_response_constructor(self):
         config = ConfigReader.read_config()
-        config["Bucket"] = self.bucket_name
+        config["Bucket"] = self.s3_api.bucket_name
         return config
 
     def create_s3(self):
@@ -86,7 +80,7 @@ class LayerCreatorInterface:
         shutil.make_archive('layer', 'zip', file_path)
 
     def upload_layer(self):
-        self.s3_api.upload_layer(self.zip_name, self.bucket_name)
+        self.s3_api.upload_layer(self.zip_name)
 
     def define_layer_version(self):
         # TODO

@@ -4,7 +4,9 @@ if __name__ == "__main__":
     s3_name = sys.argv[1]
     try:
         aws_profile = sys.argv[2]
-        creator = LayerCreatorInterface(s3_name, aws_profile)
+        s3 = S3Api(s3_name, aws_profile)
+        creator = LayerCreatorInterface(s3)
     except IndexError:
-        creator = LayerCreatorInterface(s3_name)
+        s3 = S3Api(s3_name)
+        creator = LayerCreatorInterface(s3)
     creator.cli_builder()
