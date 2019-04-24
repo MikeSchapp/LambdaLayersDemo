@@ -1,4 +1,4 @@
-from LayerCreator.Objects.creator import *
+from Objects.creator import *
 import sys
 if __name__ == "__main__":
     s3_name = sys.argv[1]

@@ -1,5 +1,5 @@
 import shutil
-from LayerCreator.Objects.config_reader import ConfigReader
+from Objects.config_reader import ConfigReader
 
 
 class LayerCreatorInterface:

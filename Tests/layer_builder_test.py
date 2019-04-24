@@ -1,5 +1,5 @@
 from datetime import datetime
-from LayerCreator.Objects.creator import *
+from Objects.creator import *
 from botocore.stub import Stubber
 
 
