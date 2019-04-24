@@ -14,6 +14,9 @@ class LayerCreatorInterface:
         self.zip_name = []
 
     def cli_builder(self):
+        """
+        Brings together the different cli methods into one simple call
+        """
         if not self.s3_api.check_if_s3_exists():
             if self.prompt_for_bucket_input():
                 self.create_s3()
@@ -22,6 +25,7 @@ class LayerCreatorInterface:
 
     @staticmethod
     def prompt_for_bucket_input():
+        """ Part 1 of the cli builder"""
         user_input = input("Bucket does not exist. Do you want to create this bucket? (Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
             return True
@@ -33,6 +37,7 @@ class LayerCreatorInterface:
             exit()
 
     def prompt_for_file_input(self):
+        """Part 2 of the cli builder"""
         user_input = input("Is the layer you want to upload zipped? (Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
             file_path = input("Please enter the filepath now: ")
@@ -57,6 +62,7 @@ class LayerCreatorInterface:
         return False
 
     def prompt_for_user_upload_input(self):
+        """Part 3 of the cli builder"""
         user_input = input("Upload layer?(Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
             self.upload_layer()
@@ -66,20 +72,37 @@ class LayerCreatorInterface:
             return False
 
     def s3_response_constructor(self):
+        """
+        Method to construct a response for the s3 create bucket.
+        :return: dictionary of **kwargs
+        """
         config = ConfigReader.read_config()
         config["Bucket"] = self.s3_api.bucket_name
         return config
 
     def create_s3(self):
+        """
+        method to bring together the s3 object and config object to construct a response from the yaml file and pass
+        to the create s3 bucket method.
+
+        :return: boto 3 response
+        """
         pre_made_response = self.s3_response_constructor()
         response = self.s3_api.create_bucket(pre_made_response)
         return response
 
     @staticmethod
     def prepare_layer(file_path):
+        """
+        Utility to zip files in preparation for upload
+        :param file_path: location of file to zip
+        """
         shutil.make_archive('layer', 'zip', file_path)
 
     def upload_layer(self):
+        """
+        Passes in zip file name to the s3 function to upload to the specified s3 bucket
+        """
         self.s3_api.upload_layer(self.zip_name)
 
     def define_layer_version(self):
