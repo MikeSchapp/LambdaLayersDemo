@@ -3,16 +3,16 @@ from Objects.config_reader import ConfigReader
 
 
 class LayerCreatorInterface:
-    def __init__(self, s3, layer):
+    def __init__(self, s3, layer, zip_name="layer.zip"):
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
         This object is used for the creation and management of lambda layers. It will create or use an existing s3
         bucket, zip the archive and then upload it to S3.
-        :param profile: Alternate AWS credential profile to be used instead.
         """
         self.s3 = s3
         self.layer = layer
-        self.zip_name = []
+        self.zip_name = zip_name
+        self.file_path = []
 
     def cli_builder(self):
         """
@@ -24,7 +24,6 @@ class LayerCreatorInterface:
         if self.prompt_for_file_input():
             if self.prompt_for_user_upload_input():
                 self.prompt_for_register_layer()
-
 
     @staticmethod
     def prompt_for_bucket_input():
@@ -44,7 +43,7 @@ class LayerCreatorInterface:
         user_input = input("Is the layer you want to upload zipped? (Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
             file_path = input("Please enter the filepath now: ")
-            self.zip_name.append(file_path)
+            self.file_path.append(file_path)
             return True
         if user_input in ["N", "n", "No", "no"]:
             new_user_input = input("Would you like to zip it?(Y, N): ")
@@ -89,7 +88,8 @@ class LayerCreatorInterface:
         Method to construct a response for the s3 create bucket.
         :return: dictionary of **kwargs
         """
-        config = ConfigReader.read_config("s3_config.yaml")
+        config = ConfigReader.read_config("config.yaml")
+        config = config["S3"]
         config["Bucket"] = self.s3.bucket_name
         return config
 
@@ -116,15 +116,15 @@ class LayerCreatorInterface:
         """
         Passes in zip file name to the s3 function to upload to the specified s3 bucket
         """
-        self.s3.upload_layer(self.zip_name)
+        self.s3.upload_layer(self.file_path)
 
     def layer_response_creator(self):
         config = ConfigReader.read_config("layer_config.yaml")
+        config = config["Layer"]
         config["Content"]["S3Bucket"] = self.s3.bucket_name
+        config["Content"]["S3Key"] = self.zip_name
         return config
 
     def define_layer_version(self):
         pre_made_response = self.layer_response_creator()
         self.layer.publish_layer_version(pre_made_response)
-
-

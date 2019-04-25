@@ -45,14 +45,14 @@ class S3:
         print("Bucket not found")
         return False
 
-    def upload_layer(self, zip_name):
+    def upload_layer(self, file_path):
         """
         Used to actually upload the pre zipped code
         :param zip_name: the name of the pre-zipped file/folder to upload to the s3 bucket
         :return: boto 3 response
         """
-        if zip_name:
-            with open(zip_name[0], "rb") as data:
+        if file_path:
+            with open(file_path[0], "rb") as data:
                 response = self.client.put_object(
                     ACL="private",
                     Body=data,
