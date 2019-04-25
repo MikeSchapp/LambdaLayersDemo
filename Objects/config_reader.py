@@ -4,11 +4,11 @@ import yaml
 class ConfigReader:
 
     @staticmethod
-    def read_config():
+    def read_config(config_file):
         """
         Reads yaml file for specific configuration and loads it into a python usable form.
         :return:
         """
-        with open("config.yaml") as config:
-            my_config = yaml.load(config, Loader=yaml.FullLoader)
+        with open(config_file) as config:
+            my_config = yaml.load(config)
         return my_config

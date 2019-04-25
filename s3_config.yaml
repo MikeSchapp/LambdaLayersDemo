@@ -24,4 +24,3 @@
 CreateBucketConfiguration:
   LocationConstraint:
     "us-east-2"
-ObjectLockEnabledForBucket: False

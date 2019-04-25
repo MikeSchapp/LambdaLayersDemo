@@ -2,7 +2,7 @@ import boto3
 from botocore.exceptions import ProfileNotFound, ClientError
 
 
-class S3Api:
+class S3:
     def __init__(self, bucket_name, profile="default"):
         # TODO Default the config to S3 best practice for security
         """
@@ -52,18 +52,20 @@ class S3Api:
         :return: boto 3 response
         """
         if zip_name:
-            response = self.client.put_object(
-                ACL="private",
-                Body=zip_name[0],
-                Bucket=self.bucket_name,
-                Key="layer.zip"
-            )
-            return response
+            with open(zip_name[0], "rb") as data:
+                response = self.client.put_object(
+                    ACL="private",
+                    Body=data,
+                    Bucket=self.bucket_name,
+                    Key="layer.zip"
+                )
+                return response
         else:
-            response = self.client.put_object(
-                ACL="private",
-                Body="layer.zip",
-                Bucket=self.bucket_name,
-                Key="layer.zip"
-            )
-            return response
+            with open("layer.zip", "rb") as data:
+                response = self.client.put_object(
+                    ACL="private",
+                    Body=data,
+                    Bucket=self.bucket_name,
+                    Key="layer.zip"
+                )
+                return response

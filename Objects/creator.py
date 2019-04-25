@@ -3,25 +3,28 @@ from Objects.config_reader import ConfigReader
 
 
 class LayerCreatorInterface:
-    def __init__(self, s3_api):
+    def __init__(self, s3, layer):
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
         This object is used for the creation and management of lambda layers. It will create or use an existing s3
         bucket, zip the archive and then upload it to S3.
         :param profile: Alternate AWS credential profile to be used instead.
         """
-        self.s3_api = s3_api
+        self.s3 = s3
+        self.layer = layer
         self.zip_name = []
 
     def cli_builder(self):
         """
         Brings together the different cli methods into one simple call
         """
-        if not self.s3_api.check_if_s3_exists():
+        if not self.s3.check_if_s3_exists():
             if self.prompt_for_bucket_input():
                 self.create_s3()
         if self.prompt_for_file_input():
-            self.prompt_for_user_upload_input()
+            if self.prompt_for_user_upload_input():
+                self.prompt_for_register_layer()
+
 
     @staticmethod
     def prompt_for_bucket_input():
@@ -71,13 +74,23 @@ class LayerCreatorInterface:
         if user_input in ["N", "n", "No", "no"]:
             return False
 
+    def prompt_for_register_layer(self):
+        """Part 4 of the cli builder"""
+        user_input = input("Do you want to register this layer?(Y, N): ")
+        if user_input in ["Y", "y", "yes", "Yes"]:
+            self.define_layer_version()
+            return True
+
+        if user_input in ["N", "n", "No", "no"]:
+            return False
+
     def s3_response_constructor(self):
         """
         Method to construct a response for the s3 create bucket.
         :return: dictionary of **kwargs
         """
-        config = ConfigReader.read_config()
-        config["Bucket"] = self.s3_api.bucket_name
+        config = ConfigReader.read_config("s3_config.yaml")
+        config["Bucket"] = self.s3.bucket_name
         return config
 
     def create_s3(self):
@@ -88,7 +101,7 @@ class LayerCreatorInterface:
         :return: boto 3 response
         """
         pre_made_response = self.s3_response_constructor()
-        response = self.s3_api.create_bucket(pre_made_response)
+        response = self.s3.create_bucket(pre_made_response)
         return response
 
     @staticmethod
@@ -103,9 +116,15 @@ class LayerCreatorInterface:
         """
         Passes in zip file name to the s3 function to upload to the specified s3 bucket
         """
-        self.s3_api.upload_layer(self.zip_name)
+        self.s3.upload_layer(self.zip_name)
+
+    def layer_response_creator(self):
+        config = ConfigReader.read_config("layer_config.yaml")
+        config["Content"]["S3Bucket"] = self.s3.bucket_name
+        return config
 
     def define_layer_version(self):
-        # TODO
-        pass
+        pre_made_response = self.layer_response_creator()
+        self.layer.publish_layer_version(pre_made_response)
+
 
