@@ -1,8 +1,10 @@
 import shutil
 from Objects.config_reader import ConfigReader
+from Objects.layer import Layer
+from Objects.s3 import S3
 
 
-class LayerCreatorInterface:
+class LayerCreator:
     def __init__(self, s3, layer, zip_name="layer.zip"):
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
@@ -25,8 +27,20 @@ class LayerCreatorInterface:
             if self.prompt_for_user_upload_input():
                 self.prompt_for_register_layer()
 
+    @classmethod
+    def pre_zipped_layer_creator(cls, zip_path, bucket_name):
+        """
+        Allows you to create a layer by specifying an s3 bucket you have access to, and a path to the zip file.
+        :param zip_path: Path to the zipfile you want to upload
+        :param bucket_name: name of the s3 bucket you want to use
+        :return:
+        """
+        layer = Layer()
+        s3 = S3(bucket_name)
+        return cls(s3, layer, zip_path)
+
     @staticmethod
-    def prompt_for_bucket_input():
+    def _prompt_for_bucket_input():
         """ Part 1 of the cli builder"""
         user_input = input("Bucket does not exist. Do you want to create this bucket? (Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
@@ -38,7 +52,7 @@ class LayerCreatorInterface:
             print("Invalid Entry")
             exit()
 
-    def prompt_for_file_input(self):
+    def _prompt_for_file_input(self):
         """Part 2 of the cli builder"""
         user_input = input("Is the layer you want to upload zipped? (Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
@@ -63,7 +77,7 @@ class LayerCreatorInterface:
                 print("Invalid Entry")
         return False
 
-    def prompt_for_user_upload_input(self):
+    def _prompt_for_user_upload_input(self):
         """Part 3 of the cli builder"""
         user_input = input("Upload layer?(Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
@@ -73,7 +87,7 @@ class LayerCreatorInterface:
         if user_input in ["N", "n", "No", "no"]:
             return False
 
-    def prompt_for_register_layer(self):
+    def _prompt_for_register_layer(self):
         """Part 4 of the cli builder"""
         user_input = input("Do you want to register this layer?(Y, N): ")
         if user_input in ["Y", "y", "yes", "Yes"]:
@@ -83,7 +97,7 @@ class LayerCreatorInterface:
         if user_input in ["N", "n", "No", "no"]:
             return False
 
-    def s3_response_constructor(self):
+    def _s3_response_constructor(self):
         """
         Method to construct a response for the s3 create bucket.
         :return: dictionary of **kwargs
@@ -100,7 +114,7 @@ class LayerCreatorInterface:
 
         :return: boto 3 response
         """
-        pre_made_response = self.s3_response_constructor()
+        pre_made_response = self._s3_response_constructor()
         response = self.s3.create_bucket(pre_made_response)
         return response
 
@@ -118,7 +132,7 @@ class LayerCreatorInterface:
         """
         self.s3.upload_layer(self.file_path)
 
-    def layer_response_creator(self):
+    def _layer_response_creator(self):
         config = ConfigReader.read_config("layer_config.yaml")
         config = config["Layer"]
         config["Content"]["S3Bucket"] = self.s3.bucket_name
@@ -126,5 +140,5 @@ class LayerCreatorInterface:
         return config
 
     def define_layer_version(self):
-        pre_made_response = self.layer_response_creator()
+        pre_made_response = self._layer_response_creator()
         self.layer.publish_layer_version(pre_made_response)
