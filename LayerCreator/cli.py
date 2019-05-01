@@ -1,5 +1,5 @@
-import shutil
 from LayerCreator.utils import *
+
 
 class LayerCreatorCli:
     def __init__(self, s3, layer, zip_name="layer.zip"):
@@ -49,7 +49,7 @@ class LayerCreatorCli:
             if new_user_input in ["Y", "y", "yes", "Yes"]:
                 file_path = input("Please enter the filepath now: ")
                 try:
-                    self.__prepare_layer_cli(file_path)
+                    prepare_layer_cli(file_path)
                     print("File Successfully Zipped")
                     return True
                 except FileNotFoundError:
@@ -102,14 +102,6 @@ class LayerCreatorCli:
         pre_made_response = self.__s3_response_constructor_cli()
         response = self.s3.create_bucket(pre_made_response)
         return response
-
-    @staticmethod
-    def __prepare_layer_cli(file_path):
-        """
-        Utility to zip files in preparation for upload
-        :param file_path: location of file to zip
-        """
-        shutil.make_archive('layer', 'zip', file_path)
 
     def __upload_layer_cli(self):
         """
