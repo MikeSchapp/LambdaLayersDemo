@@ -1,5 +1,5 @@
 import shutil
-from Objects.config_reader import ConfigReader
+from Objects.utils import ConfigReader
 from Objects.layer import Layer
 from Objects.s3 import S3
 
@@ -26,7 +26,6 @@ class LayerCreatorCli:
         if self.__prompt_for_file_input():
             if self.__prompt_for_user_upload_input():
                 self.__prompt_for_register_layer()
-
 
     @staticmethod
     def __prompt_for_bucket_input():
@@ -131,20 +130,3 @@ class LayerCreatorCli:
     def __define_layer_version(self):
         pre_made_response = self.__layer_response_creator()
         self.layer.publish_layer_version(pre_made_response)
-
-
-class LayerCreator:
-    def __init__(self):
-        pass
-
-    @classmethod
-    def pre_zipped_layer_creator(cls, zip_path, bucket_name):
-        """
-        Allows you to create a layer by specifying an s3 bucket you have access to, and a path to the zip file.
-        :param zip_path: Path to the zipfile you want to upload
-        :param bucket_name: name of the s3 bucket you want to use
-        :return:
-        """
-        layer = Layer()
-        s3 = S3(bucket_name)
-        return cls(s3, layer, zip_path)
