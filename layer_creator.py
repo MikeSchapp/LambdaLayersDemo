@@ -1,4 +1,4 @@
-from Objects.creator import *
+from Objects.cli import *
 import sys
 
 from Objects.layer import Layer
@@ -10,9 +10,9 @@ if __name__ == "__main__":
         aws_profile = sys.argv[2]
         layer = Layer(aws_profile)
         s3 = S3(s3_name, aws_profile)
-        creator = LayerCreator(s3, layer)
+        creator = LayerCreatorCli(s3, layer)
     except IndexError:
         layer = Layer()
         s3 = S3(s3_name)
-        creator = LayerCreator(s3, layer)
+        creator = LayerCreatorCli(s3, layer)
     creator.cli_builder()
