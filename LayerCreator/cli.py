@@ -1,8 +1,5 @@
 import shutil
-from Objects.utils import ConfigReader
-from Objects.layer import Layer
-from Objects.s3 import S3
-
+from LayerCreator.utils import *
 
 class LayerCreatorCli:
     def __init__(self, s3, layer, zip_name="layer.zip"):
@@ -90,7 +87,7 @@ class LayerCreatorCli:
         Method to construct a response for the s3 create bucket.
         :return: dictionary of **kwargs
         """
-        config = ConfigReader.read_config("config.yaml")
+        config = read_config("config.yaml")
         config = config["S3"]
         config["Bucket"] = self.s3.bucket_name
         return config
@@ -121,7 +118,7 @@ class LayerCreatorCli:
         self.s3.upload_layer(self.file_path)
 
     def __layer_response_creator(self):
-        config = ConfigReader.read_config("layer_config.yaml")
+        config = read_config("layer_config.yaml")
         config = config["Layer"]
         config["Content"]["S3Bucket"] = self.s3.bucket_name
         config["Content"]["S3Key"] = self.zip_name

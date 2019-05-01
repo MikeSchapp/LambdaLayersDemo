@@ -73,6 +73,11 @@ class Session:
         self.__bucket = bucket_name
 
     def publish_layer_version(self, **kwargs):
+        """
+
+        :param kwargs:
+        :return:
+        """
         pre_made_response = {}
         layer_name = kwargs.get("LayerName", "LayerBuilder")
         description = kwargs.get("Description", "Layer created with layer builder")

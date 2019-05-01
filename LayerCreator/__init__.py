@@ -1,1 +1,1 @@
-from LayerCreator.session import Session as LayerCreator
+from LayerCreator.session import Session
