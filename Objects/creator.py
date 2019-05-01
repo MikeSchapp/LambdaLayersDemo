@@ -2,7 +2,7 @@ import shutil
 from Objects.config_reader import ConfigReader
 
 
-class LayerCreatorInterface:
+class LayerCreator:
     def __init__(self, s3, layer, zip_name="layer.zip"):
         # TODO implement a CloudFormation template to register the layer and establish permissions for it
         """
