@@ -1,5 +1,4 @@
 import os
-
 import yaml
 import shutil
 import ntpath
@@ -15,7 +14,7 @@ def read_config(config_file):
     return my_config
 
 
-def prepare_layer_cli(file_path, language):
+def zip_layer(file_path, language):
     if language == "python":
         language_path = "python/"
     elif language == "ruby":
@@ -31,12 +30,9 @@ def prepare_layer_cli(file_path, language):
     :param file_path: location of file to zip
     """
     file = ntpath.basename(file_path)
-    os.makedirs("../Layers/layers_prep/" + language_path)
-    shutil.copyfile(file_path, "../Layers/layers_prep/" + language_path + file)
-    shutil.make_archive('../Layers/layer', 'zip', "../Layers/layers_prep")
-    os.remove("../Layers/layers_prep/" + language_path + file)
-    os.removedirs("../Layers/layers_prep/" +language_path)
-
-
-if __name__ == "__main__":
-    prepare_layer_cli("cfn_launcher.py", "node")
+    os.makedirs("Layers/layers_prep/" + language_path)
+    shutil.copyfile(file_path, "Layers/layers_prep/" + language_path + file)
+    shutil.make_archive('Layers/layer', 'zip', "Layers/layers_prep")
+    os.remove("Layers/layers_prep/" + language_path + file)
+    os.removedirs("Layers/layers_prep/" + language_path)
+    return "Layers/layer.zip"

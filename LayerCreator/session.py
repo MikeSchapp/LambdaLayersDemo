@@ -1,5 +1,6 @@
 import boto3
 from botocore.exceptions import ProfileNotFound, ClientError
+from LayerCreator import utils
 
 
 class Session:
@@ -65,6 +66,9 @@ class Session:
                     return response
         else:
             raise KeyError("Specified bucket does not exist")
+
+    def zip_layer(self, file_location, language):
+        self.__zip_path = utils.zip_layer(file_location, language)
 
     def set_zip(self, zip_path):
         self.__zip_path = zip_path
