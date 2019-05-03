@@ -1,9 +1,8 @@
-from Objects.cli import *
+from LayerCreator.cli import *
 import sys
-import LayerCreator
-
-from Objects.layer import Layer
-from Objects.s3 import S3
+from LayerCreator.layer import Layer
+from LayerCreator.s3 import S3
+from LayerCreator.cli import LayerCreatorCli
 
 if __name__ == "__main__":
     s3_name = sys.argv[1]
@@ -17,9 +16,3 @@ if __name__ == "__main__":
         s3 = S3(s3_name)
         creator = LayerCreatorCli(s3, layer)
     creator.cli_builder()
-
-    test = LayerCreator.LayerCreator()
-    test.set_zip()
-    test.set_bucket()
-    test.check_if_s3_exists()
-    test.upload_layer()
