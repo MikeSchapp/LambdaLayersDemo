@@ -37,9 +37,10 @@ This will import the module and then allow you to instantiate the boto3 clients 
 (Must have access to both s3 and lambda for this to work)
 
 Steps to use:
-1) zip_layer to properly setup the zipfile (If not already zipped). It takes the file path, and the programming language as a parameter.
+1) zip_layer to properly setup the zipfile (If not already zipped). It takes the file path, and runtime identifier as a parameter. 
+    See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html for valid identifiers.
 
-        session.zip_layer("File Path", "python")
+        session.zip_layer("File Path", "python3.7")
 
 2) set_zip to set the zip path
 
@@ -48,7 +49,13 @@ Steps to use:
 3) set_bucket to set the s3 bucket name that you want to use.
 
         session.set_bucket("Bucket Name")
-        
+
+4) set_runtime to set the lambda layer runtime
+    
+    See https://docs.aws.amazon.com/lambda/latest/dg/lambda-runtimes.html
+    
+        session.set_runtime("python3.7")
+
 4) upload_layer to designate a name for the layer and upload it to s3
 
         session.upload_layer("My Layer")

@@ -15,14 +15,16 @@ def read_config(config_file):
 
 
 def zip_layer(file_path, language):
-    if language == "python":
+    if language in ["python3.7", "python3.6", "python2.7"]:
         language_path = "python/"
-    elif language == "ruby":
+    elif language in ["ruby2.5"]:
         language_path = "ruby/gems/"
-    elif language == "java":
+    elif language in ["java8", "java"]:
         language_path = "java/lib/"
-    elif language == "node":
+    elif language in ["nodejs8.10"]:
         language_path = "nodejs/node_modules/"
+    elif language in ["go1.x"]:
+        language_path = "bin/"
     else:
         language_path = "bin/"
     """

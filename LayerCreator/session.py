@@ -20,6 +20,7 @@ class Session:
         self.__zip_path = None
         self.__bucket = None
         self.__layer_name = None
+        self.__runtime = []
 
     def check_if_s3_exists(self):
         """
@@ -76,6 +77,9 @@ class Session:
     def set_bucket(self, bucket_name):
         self.__bucket = bucket_name
 
+    def append_runtime(self, runtime):
+        self.__runtime.append(runtime)
+
     def publish_layer_version(self, **kwargs):
         """
 
@@ -88,7 +92,7 @@ class Session:
         key = kwargs.get("S3Key", self.__layer_name)
         bucket = kwargs.get("S3Bucket", self.__bucket)
         version = kwargs.get("S3ObjectVersion", None)
-        runtime = kwargs.get("CompatibleRuntimes", ["python3.7"])
+        runtime = kwargs.get("CompatibleRuntimes", self.__runtime)
         license_info = kwargs.get("LicenseInfo", "N/A")
         pre_made_response["LayerName"] = layer_name
         pre_made_response["Description"] = description
