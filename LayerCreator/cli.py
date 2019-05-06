@@ -82,12 +82,12 @@ class LayerCreatorCli:
         if user_input in ["N", "n", "No", "no"]:
             return False
 
-    def __s3_response_constructor_cli(self):
+    def _s3_response_constructor_cli(self):
         """
         Method to construct a response for the s3 create bucket.
         :return: dictionary of **kwargs
         """
-        config = read_config("config.yaml")
+        config = read_config("../config.yaml")
         config = config["S3"]
         config["Bucket"] = self.s3.bucket_name
         return config
