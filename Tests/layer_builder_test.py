@@ -1,30 +1,7 @@
 from datetime import datetime
 import boto3
-from LayerCreator.cli import *
+import LayerCreator
 from botocore.stub import Stubber
-
-from LayerCreator.layer import Layer
-from LayerCreator.s3 import S3
-
-
-def test_stub_create_s3():
-    session = boto3.Session(profile_name="mfa")
-    s3 = session.client('s3')
-    stubber = Stubber(s3)
-    response = {
-        "Location": "Test"
-    }
-    expected_params = {'Bucket': 'mike-stub-test',
-                       'CreateBucketConfiguration': {'LocationConstraint': 'us-east-2'}}
-    stubber.add_response('create_bucket', response, expected_params)
-    stubber.activate()
-    layer = Layer()
-    s3_client = S3('mike-stub-test')
-    test = LayerCreatorCli(s3_client, layer)
-    test.s3.client = s3
-    config = test._s3_response_constructor_cli()
-    new_response = test.s3.create_bucket(config)
-    assert response == new_response
 
 
 def test_stub_list_buckets_bucket_exists():
@@ -50,11 +27,10 @@ def test_stub_list_buckets_bucket_exists():
     expected_params = None
     stubber.add_response('list_buckets', response, expected_params)
     stubber.activate()
-    layer = Layer()
-    s3_client = S3('mike-stub-test')
-    test = LayerCreatorCli(s3_client, layer)
-    test.s3.client = s3
-    new_response = test.s3.check_if_s3_exists()
+    test = LayerCreator.Session()
+    test.set_bucket('mike-stub-test')
+    test._s3_client = s3
+    new_response = test.check_if_s3_exists()
     assert new_response is True
 
 
@@ -80,11 +56,10 @@ def test_stub_list_buckets_bucket_not_exist():
     expected_params = None
     stubber.add_response('list_buckets', response, expected_params)
     stubber.activate()
-    layer = Layer()
-    s3_client = S3('mike-stub-test')
-    test = LayerCreatorCli(s3_client, layer)
-    test.s3.client = s3
-    new_response = test.s3.check_if_s3_exists()
+    test = LayerCreator.Session()
+    test.set_bucket('mike-stub-test')
+    test._s3_client = s3
+    new_response = test.check_if_s3_exists()
     assert new_response is False
 
 
@@ -102,19 +77,19 @@ def test_stub_put_object_prenamed():
         'SSEKMSKeyId': 'test',
         'RequestCharged': 'test'
     }
-    expected_params = {
-        "ACL": "private",
-        "Body": "dummy_data",
-        "Bucket": "mike-stub-test",
-        "Key": "layer.zip"}
+    with open("test.zip", "rb") as data:
+        expected_params = {
+            "ACL": "private",
+            "Body": data,
+            "Bucket": "mike-stub-test",
+            "Key": "layer.zip"}
     stubber.add_response('put_object', response, expected_params)
     stubber.activate()
-    layer = Layer()
-    s3_client = S3('mike-stub-test')
-    test = LayerCreatorCli(s3_client, layer)
-    test.s3.client = s3
-    test.zip_name = ["test.zip"]
-    new_response = test.s3.upload_layer(test.zip_name)
+    test = LayerCreator.Session()
+    test.set_bucket('mike-stub-test')
+    test._s3_client = s3
+    test.set_zip("test.zip")
+    new_response = test.upload_layer("My_Awesome_Layer")
     new_response["Bucket"] = "dummy_data"
     assert new_response == response
 

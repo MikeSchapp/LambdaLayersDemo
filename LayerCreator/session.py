@@ -12,15 +12,15 @@ class Session:
         self.profile = profile
         try:
             session = boto3.Session(profile_name=self.profile)
-            self.__s3_client = session.client('s3')
-            self.__lambda_client = session.client('lambda')
+            self._s3_client = session.client('s3')
+            self._lambda_client = session.client('lambda')
         except ProfileNotFound:
-            self.__s3_client = boto3.client('s3')
-            self.__lambda_client = boto3.client('lambda')
-        self.__zip_path = None
-        self.__bucket = None
-        self.__layer_name = None
-        self.__runtime = []
+            self._s3_client = boto3.client('s3')
+            self._lambda_client = boto3.client('lambda')
+        self._zip_path = None
+        self._bucket = None
+        self._layer_name = None
+        self._runtime = []
 
     def check_if_s3_exists(self):
         """
@@ -28,12 +28,12 @@ class Session:
         :return: Returns true if found, or false if not found
         """
         try:
-            response = self.__s3_client.list_buckets()
+            response = self._s3_client.list_buckets()
         except (ClientError, ProfileNotFound) as err:
             print(err)
             exit()
         for item in response["Buckets"]:
-            if item["Name"] == self.__bucket:
+            if item["Name"] == self._bucket:
                 print("Bucket found!")
                 return True
         print("Bucket not found")
@@ -45,23 +45,23 @@ class Session:
         :param layer_name: What you want to name the layer in the s3 bucket.
         :return: boto 3 response
         """
-        self.__layer_name = layer_name
-        if self.__bucket:
-            if self.__zip_path:
-                with open(self.__zip_path, "rb") as data:
-                    response = self.__s3_client.put_object(
+        self._layer_name = layer_name
+        if self._bucket:
+            if self._zip_path:
+                with open(self._zip_path, "rb") as data:
+                    response = self._s3_client.put_object(
                         ACL="private",
                         Body=data,
-                        Bucket=self.__bucket,
+                        Bucket=self._bucket,
                         Key=layer_name + ".zip"
                     )
                     return response
             else:
                 with open("layer.zip", "rb") as data:
-                    response = self.__s3_client.put_object(
+                    response = self._s3_client.put_object(
                         ACL="private",
                         Body=data,
-                        Bucket=self.__bucket,
+                        Bucket=self._bucket,
                         Key=layer_name + ".zip"
                     )
                     return response
@@ -69,16 +69,16 @@ class Session:
             raise KeyError("Specified bucket does not exist")
 
     def zip_layer(self, file_location, language):
-        self.__zip_path = utils.zip_layer(file_location, language)
+        self._zip_path = utils.zip_layer(file_location, language)
 
     def set_zip(self, zip_path):
-        self.__zip_path = zip_path
+        self._zip_path = zip_path
 
     def set_bucket(self, bucket_name):
-        self.__bucket = bucket_name
+        self._bucket = bucket_name
 
     def append_runtime(self, runtime):
-        self.__runtime.append(runtime)
+        self._runtime.append(runtime)
 
     def publish_layer_version(self, **kwargs):
         """
@@ -89,10 +89,10 @@ class Session:
         pre_made_response = {}
         layer_name = kwargs.get("LayerName", "LayerBuilder")
         description = kwargs.get("Description", "Layer created with layer builder")
-        key = kwargs.get("S3Key", self.__layer_name)
-        bucket = kwargs.get("S3Bucket", self.__bucket)
+        key = kwargs.get("S3Key", self._layer_name)
+        bucket = kwargs.get("S3Bucket", self._bucket)
         version = kwargs.get("S3ObjectVersion", None)
-        runtime = kwargs.get("CompatibleRuntimes", self.__runtime)
+        runtime = kwargs.get("CompatibleRuntimes", self._runtime)
         license_info = kwargs.get("LicenseInfo", "N/A")
         pre_made_response["LayerName"] = layer_name
         pre_made_response["Description"] = description
@@ -102,5 +102,5 @@ class Session:
             pre_made_response["Content"]["S3ObjectVersion"] = version
         pre_made_response["CompatibleRuntime"] = runtime
         pre_made_response["LicenseInfo"] = license_info
-        response = self.__lambda_client.publish_layer_version(**pre_made_response)
+        response = self._lambda_client.publish_layer_version(**pre_made_response)
         return response
